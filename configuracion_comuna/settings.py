@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
-
+from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-gbijk$-w+s1-pgbnyuv672@r_7wy*39edj1sivp=8q8+--hl-c'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -77,11 +77,11 @@ WSGI_APPLICATION = 'configuracion_comuna.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'db_comuna',
-        'USER': 'postgres',
-        'PASSWORD': 'INsecto-1380',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'NAME': config('DATA_BASE_NAME'),
+        'USER': config('DATA_BASE_USER'),
+        'PASSWORD': config('DATA_BASE_PASS'),
+        'HOST': config('DATA_BASE_HOST'),
+        'PORT': config('DATA_BASE_PORT'),
     }
 }
 
