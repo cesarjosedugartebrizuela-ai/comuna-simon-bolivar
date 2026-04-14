@@ -1,0 +1,86 @@
+<html>
+<head>
+    <style>
+        @page { size: letter; margin: 2cm; }
+        body { font-family: "Helvetica", sans-serif; color: #333; font-size: 12px; }
+        .header { text-align: center; font-size: 13px; font-weight: bold; text-transform: uppercase; color: #555; }
+        .logo { width: 150px; height: auto; margin-bottom: 10px; }
+        .titulo { font-size: 22px; font-weight: bold; color: #0d6efd; margin-top: 15px; letter-spacing: 1px; }
+        .info-reporte { margin-bottom: 20px; font-style: italic; text-align: right; }
+        table { text-align: center; width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: center; background-color: #f2f2f2; border: 1px solid #ddd; padding: 10px; }
+        td { border: 1px solid #ddd; padding: 10px; }
+        .totales { font-weight: bold; background-color: #e9ecef; }
+        .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 9px; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{{ ruta_logo }}" class="logo"><br>
+        República Bolivariana de Venezuela<br>
+        Municipio Libertador - Distrito Capital<br>
+        Parroquia Altagracia<br>
+        Circuito Comunal "Simón Bolívar"
+        <div class="titulo">Reporte Estadístico de Gestión Comunal</div>
+    </div>
+
+    <div class="info-reporte">
+        Consejo Comunal: <strong>{% if consejo %}{{ consejo }}{% else %}Circuito Comunal Completo{% endif %}</strong><br>
+        Fecha de Emisión: {{ fecha_emision }}<br>
+        Hora: {{ hora_emision }}
+    </div>
+
+    <p>A continuación se presenta el resumen demográfico consolidado del censo digital correspondiente al sector seleccionado:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Categoría / Grupo Etario</th>
+                <th>Femenino</th>
+                <th>Masculino</th>
+                <th class="totales">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Niños (0-12 años)</td>
+                <td>{{ data_fem.0 }}</td>
+                <td>{{ data_masc.0 }}</td>
+                <td class="totales">{{ total_ninos }}</td>
+            </tr>
+            <tr>
+                <td>Adolescentes (13-17 años)</td>
+                <td>{{ data_fem.1 }}</td>
+                <td>{{ data_masc.1 }}</td>
+                <td class="totales">{{ total_adol }}</td>
+            </tr>
+            <tr>
+                <td>Adultos (18-59 años)</td>
+                <td>{{ data_fem.2 }}</td>
+                <td>{{ data_masc.2 }}</td>
+                <td class="totales">{{ total_adultos }}</td>
+            </tr>
+            <tr>
+                <td>Adultos Mayores (60+)</td>
+                <td>{{ data_fem.3 }}</td>
+                <td>{{ data_masc.3 }}</td>
+                <td class="totales">{{ total_mayores }}</td>
+            </tr>
+            <tr class="totales">
+                <td>TOTAL GENERAL</td>
+                <td>{{ total_mujeres }}</td>
+                <td>{{ total_hombres }}</td>
+                <td>{{ total_comunidad }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div style="margin-top: 50px;">
+        <p><strong>Nota:</strong> Este reporte refleja los datos validados en el sistema hasta la fecha de emisión. La información aquí contenida es de uso exclusivo para la gestión social y administrativa del consejo comunal.</p>
+    </div>
+
+    <div class="footer">
+        Sistema Comunidad Activa - Generado digitalmente para el fortalecimiento del Poder Popular.
+    </div>
+</body>
+</html>

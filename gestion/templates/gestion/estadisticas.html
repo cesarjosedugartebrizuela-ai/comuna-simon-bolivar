@@ -1,0 +1,116 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Panel de Estadísticas - Comunidad Activa</title>
+</head>
+<body class="bg-light">
+    <div class="container-fluid mt-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold mb-0 text-center"><i class="bi bi-bar-chart-line-fill text-primary me-2"></i> Panel de Estadísticas Generales</h3>
+            <form method="GET" class="d-flex gap-2 w-50">
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search text-primary"></i></span>
+                    <select name="consejo_comunal" class="form-control shadow-sm">
+                        <option value="">Ver Todo el Circuito</option>
+                        <option value="Andrés Bello" {% if consejo_seleccionado == "Andrés Bello" %}selected{% endif %}>Andrés Bello</option>
+                        <option value="Casco Histórico" {% if consejo_seleccionado == "Casco Histórico" %}selected{% endif %}>Casco Histórico</option>
+                        <option value="Panteón Nacional" {% if consejo_seleccionado == "Panteón Nacional" %}selected{% endif %}>Panteón Nacional</option>
+                        <option value="Lomas de Urdaneta" {% if consejo_seleccionado == "Lomas de Urdaneta" %}selected{% endif %}>Lomas de Urdaneta</option>
+                        <option value="San José" {% if consejo_seleccionado == "San José" %}selected{% endif %}>San José</option>
+                        <option value="La Pastora" {% if consejo_seleccionado == "La Pastora" %}selected{% endif %}>La Pastora</option>
+                        <option value="El Mirador" {% if consejo_seleccionado == "El Mirador" %}selected{% endif %}>El Mirador</option>
+                        <option value="Santa Teresa" {% if consejo_seleccionado == "Santa Teresa" %}selected{% endif %}>Santa Teresa</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary shadow-sm"><i class="bi bi-funnel-fill me-1"></i> Filtrar</button>
+                    {% if consejo_seleccionado %}
+                    <a href="{% url 'panel_estadisticas' %}" class="btn btn-outline-secondary shadow-sm">Limpiar</a>
+                    {% endif %}
+                </div>
+            </form>
+            <a href="{% url 'exportar_estadisticas_pdf' %}?consejo_comunal={{ consejo_seleccionado }}" 
+            class="btn btn-danger rounded-pill shadow-sm px-3" 
+            title="Descargar Reporte en PDF">
+                <i class="bi bi-file-earmark-pdf-fill"></i> Generar
+            </a>            
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary fw-bold rounded-pill shadow">
+                <i class="bi bi-house-door me-1"></i> Volver al Panel
+            </a>
+        </div>
+        <div class="row g-3 text-center align-center justify-content-center">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 bg-primary text-white">
+                    <div class="card-body">
+                        <h6 class="text-uppercase small">Población Total</h6>
+                        <h4 class="fw-bold">{{ total_comunidad }}</h4>
+                        <i class="bi bi-people-fill fs-3"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 bg-success text-white">
+                    <div class="card-body">
+                        <h6 class="text-uppercase small">Vecinos Registrados</h6>
+                        <h4 class="fw-bold">{{ total_vecinos }}</h4>
+                        <i class="bi bi-person-badge-fill fs-3"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 bg-info text-white">
+                    <div class="card-body">
+                        <h6 class="text-uppercase small">Niños(as) y Adolescentes / Carga Familiar</h6>
+                        <h4 class="fw-bold">{{ ninos|add:adolescentes }}</h4>
+                        <i class="bi bi-backpack-fill fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-4 mb-3">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-4 text-center">Distribución Total por Género</h5>
+                        <canvas id="chartGenero"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8 mb-3">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-4 text-center">Distribución Total por Grupo Etario y Género</h5>
+                        <canvas id="chartEdades"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const ctxGenero = document.getElementById('chartGenero').getContext('2d');
+        new Chart(ctxGenero, {
+            type: 'doughnut',
+            data: {
+                labels: ['Femenino', 'Masculino'],
+                datasets: [{
+                    data: [{{total_mujeres}}, {{total_hombres}}],
+                    backgroundColor: ['#e83e8c', '#007bff'],
+                    hoverOffset: 10 }]},
+            options: {responsive: true, plugins: {legend: {position: 'bottom'}}}
+        });
+        const ctxEdades = document.getElementById('chartEdades').getContext('2d');
+        new Chart(ctxEdades, {
+            type: 'bar',
+            data: {
+                labels: ['Niños (0-12)', 'Adolescentes (13-17)', 'Adultos (18-59)', 'Adultos Mayores (60+)'],
+                datasets: [
+                    {label: 'Femenino', data: {{data_fem|safe}}, backgroundColor: '#e83e8c', borderRadius: 5},
+                    {label: 'Masculino', data: {{data_masc|safe}}, backgroundColor: '#007bff', borderRadius: 5 }]},
+            options: {responsive: true, scales: {y: {beginAtZero: true, ticks: {stepSize: 1}}}, plugins: {legend: {position: 'bottom'}}}
+        });
+    </script>
+</body>
+</html>
