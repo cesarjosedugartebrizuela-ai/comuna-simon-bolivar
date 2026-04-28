@@ -3,3 +3,4 @@ migrations/
 env/
 venv_linux/
 __pycache__/
+*.sql
