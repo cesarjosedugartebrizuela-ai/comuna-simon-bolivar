@@ -1,5 +1,5 @@
 from django.db import models, IntegrityError
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group
 import random
 
 
@@ -106,3 +106,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.username
+
+class Grupo(Group):
+    class Meta:
+        proxy = True # ¡Esta es la magia que crea el espejo!
+        verbose_name = 'Grupo'
+        verbose_name_plural = 'Grupos'
