@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     # Se colocan antes de todo para que tome el comando de generación de super usuario sin pedir el campo usuario
     'apps.cuenta', 
     'apps.constancias',
+    'apps.carga_familiar',
     'gestion',
     
     "unfold",
