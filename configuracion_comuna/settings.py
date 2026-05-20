@@ -23,7 +23,7 @@ INSTALLED_APPS = [
     'apps.cuenta', 
     'apps.constancias',
     'apps.carga_familiar',
-    'gestion',
+    #'gestion',
     
     "unfold",
     'django.contrib.admin',
