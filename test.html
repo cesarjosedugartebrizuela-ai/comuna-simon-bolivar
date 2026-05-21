@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cliente API con JWT</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f3f4f6;
+            --surface: #ffffff;
+            --text: #1f2937;
+            --border: #d1d5db;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            padding: 2rem 1rem;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            margin-top: 0;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .flex-group {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .flex-group .method-select {
+            width: 120px;
+        }
+
+        .flex-group .url-input {
+            flex-grow: 1;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            font-family: monospace;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .response-container {
+            margin-top: 2rem;
+            background: #1e1e1e;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .response-header {
+            background: #2d2d2d;
+            padding: 0.5rem 1rem;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-family: monospace;
+        }
+
+        .status-badge {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .status-success { background: #059669; }
+        .status-error { background: #dc2626; }
+        .status-pending { background: #4b5563; }
+
+        pre {
+            margin: 0;
+            padding: 1rem;
+            color: #d4d4d4;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Consulta API con Autenticación JWT</h2>
+
+    <div class="form-group flex-group">
+        <div class="method-select">
+            <label for="method">Método</label>
+            <select id="method">
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="PATCH">PATCH</option>
+                <option value="DELETE">DELETE</option>
+            </select>
+        </div>
+        <div class="url-input">
+            <label for="url">URL del Endpoint</label>
+            <input type="url" id="url" placeholder="https://api.ejemplo.com/v1/usuarios" required>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="token">Token JWT (Sin la palabra "Bearer")</label>
+        <input type="text" id="token" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+    </div>
+
+    <div class="form-group">
+        <label for="body">Cuerpo de la Petición (Solo JSON - opcional para GET/DELETE)</label>
+        <textarea id="body" rows="4" placeholder='{&#10;  "clave": "valor"&#10;}'></textarea>
+    </div>
+
+    <button onclick="realizarPeticion()">Enviar Petición</button>
+
+    <div class="response-container">
+        <div class="response-header">
+            <span>Respuesta del Servidor</span>
+            <span id="status-badge" class="status-badge status-pending">Esperando...</span>
+        </div>
+        <pre><code id="response-body">Realiza una petición para ver el resultado aquí...</code></pre>
+    </div>
+</div>
+
+<script>
+    async function realizarPeticion() {
+        const url = document.getElementById('url').value.trim();
+        const method = document.getElementById('method').value;
+        const token = document.getElementById('token').value.trim();
+        const bodyInput = document.getElementById('body').value.trim();
+        
+        const responseBodyEl = document.getElementById('response-body');
+        const statusBadgeEl = document.getElementById('status-badge');
+
+        if (!url) {
+            alert('Por favor, ingresa una URL válida.');
+            return;
+        }
+
+        responseBodyEl.textContent = "Cargando...";
+        statusBadgeEl.textContent = "Cargando...";
+        statusBadgeEl.className = "status-badge status-pending";
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json, application/pdf' // Indicamos que también aceptamos PDFs
+        };
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const options = {
+            method: method,
+            headers: headers
+        };
+
+        if (['POST', 'PUT', 'PATCH'].includes(method) && bodyInput) {
+            try {
+                JSON.parse(bodyInput); 
+                options.body = bodyInput;
+            } catch (error) {
+                statusBadgeEl.textContent = "Error Local";
+                statusBadgeEl.className = "status-badge status-error";
+                responseBodyEl.textContent = "El cuerpo no es un JSON válido.\n\n" + error.message;
+                return;
+            }
+        }
+
+        try {
+            const response = await fetch(url, options);
+            
+            statusBadgeEl.textContent = `${response.status} ${response.statusText}`;
+            if (response.ok) {
+                statusBadgeEl.className = "status-badge status-success";
+            } else {
+                statusBadgeEl.className = "status-badge status-error";
+            }
+
+            // 1. Verificar si la respuesta es un PDF
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/pdf")) {
+                
+                // Convertir la respuesta a binario (Blob)
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                
+                // 2. Intentar obtener el nombre del archivo si Django lo envía
+                let filename = "documento.pdf";
+                const disposition = response.headers.get("Content-Disposition");
+                
+                if (disposition && disposition.includes('filename=')) {
+                    const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
+                    if (matches != null && matches[1]) {
+                        filename = matches[1].replace(/['"]/g, '');
+                    }
+                }
+
+                // 3. Crear enlace invisible y forzar descarga
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = downloadUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Limpieza
+                window.URL.revokeObjectURL(downloadUrl);
+                document.body.removeChild(a);
+
+                responseBodyEl.textContent = `✅ Archivo PDF (${filename}) descargado automáticamente.`;
+                return; // Terminamos aquí para no intentar parsear el PDF como texto
+            }
+
+            // Si NO es un PDF, procesar como texto o JSON normal
+            const responseText = await response.text();
+            
+            try {
+                const json = JSON.parse(responseText);
+                responseBodyEl.textContent = JSON.stringify(json, null, 2);
+            } catch (e) {
+                responseBodyEl.textContent = responseText || "(Respuesta vacía)";
+            }
+
+        } catch (error) {
+            statusBadgeEl.textContent = "Error de Conexión";
+            statusBadgeEl.className = "status-badge status-error";
+            responseBodyEl.textContent = `Error de red: ${error.message}`;
+        }
+    }
+</script>
+
+</body>
+</html>

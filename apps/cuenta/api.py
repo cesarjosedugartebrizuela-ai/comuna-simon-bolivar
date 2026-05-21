@@ -14,8 +14,20 @@ def login(request, data: LoginSchema):
         return {"token": token, "mensaje": "Inicio de sesión exitoso"}
     return router.create_response(request, {"error": "Credenciales inválidas"}, status=401)
 
+@router.post("/logout", auth=AuthBearer())
+def logout(request):
+    """
+    Endpoint para cerrar sesión. 
+    Al usar JWT, el servidor solo confirma la acción. 
+    El cliente (app móvil) DEBE borrar el token de su almacenamiento.
+    """
+    return {
+        "mensaje": "Sesión cerrada exitosamente", 
+        "instruccion": "Por favor, elimina el token en la aplicación cliente."
+    }
+
 # Usamos AuthBearer para proteger esta ruta. ¡Solo usuarios con token pueden entrar!
-@router.get("/me", response=UserOutSchema, auth=AuthBearer())
+@router.get("/perfil", response=UserOutSchema, auth=AuthBearer())
 def perfil_usuario(request):
     # request.auth contiene el usuario que devolvió nuestra clase AuthBearer
     return request.auth

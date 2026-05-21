@@ -1,0 +1,58 @@
+<html>
+<head>
+    <style>
+        @page { size: letter; margin: 2cm; }
+        body { font-family: "Helvetica", sans-serif; line-height: 1.6; color: #333; }
+        .header { text-align: center; padding-bottom: 15px; margin-bottom: 20px; }
+        .logo { width: 150px; height: auto; margin-bottom: 10px; }
+        .titulo-entidad { font-size: 13px; font-weight: bold; text-transform: uppercase; color: #555;}
+        .titulo-doc { font-size: 22px; font-weight: bold; color: #0d6efd; margin-top: 15px; letter-spacing: 1px;}
+        .contenido { font-size: 12px; margin-top: 30px; text-align: justify; }
+        .negrita { font-weight: bold; }
+        .sello { margin-top: 70px; text-align: center; font-size: 15px;}
+        .firma-linea { border-top: 1px solid #333; width: 250px; margin: 0 auto; margin-top: 80px; }
+        .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 10px; color: #777; border-top: 1px solid #eee; padding-top: 5px;}
+        .qr-container { position: absolute; top: 0; right: 0; text-align: center; }
+        .qr-img { width: 80px; height: 80px; }
+        .qr-text { font-size: 8px; color: #888; display: block; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="titulo-entidad">
+            <img src="{{ ruta_logo }}" class="logo"><br>
+            República Bolivariana de Venezuela<br>
+            Municipio Libertador - Distrito Capital<br>
+            Parroquia Altagracia<br>
+            Circuito Comunal "Simón Bolívar"
+        </div>
+        <div class="titulo-doc">CONSTANCIA DE RESIDENCIA</div>
+    </div>
+    <div class="contenido">
+        <p>
+            Quien suscribe, Voceras y Voceros del Consejo Comunal <span class="negrita">{{ u.consejo_comunal }}</span>, 
+            en cumplimiento a lo establecido en el numeral 19, Artículo 34 de la Ley Orgánica de Reforma de la Ley orgánica de los Consejos Comunales,
+            publicada en Gaceta Oficial de la República Bolivariana de Venezuela Extraordinaria Nº 6.759 de fecha 26 de agosto del año 2023,
+            hacemos constar por medio de la presente que el (la) ciudadano(a): <span class="negrita">{{ u.nombre_completo }}</span>, 
+            titular de la Cédula de Identidad <span class="negrita">{{ u.cedula_identidad }}</span>, 
+            está domiciliado(a) en la siguiente dirección: <span class="negrita">{{ u.direccion }}</span> 
+            de esta Comunidad desde hace más de <span class="negrita">{{ c.anios_residencia }}</span> años.</p>
+        <p>La misma se solicita por motivo de: <span class="negrita">{{ c.motivo }}</span>.</p>
+        <p>Constancia que se expide a solicitud de la parte interesada en la ciudad de Caracas, a los {{ fecha_dia }} días del mes de {{ fecha_mes }} del año {{ fecha_anio }}.</p>
+        <p>Atentamente,</p>
+        <div class="sello">
+            <div class="firma-linea"></div>
+            Vocero(a) Principal<br>
+            Consejo Comunal <span class="negrita">{{ u.consejo_comunal }}</span>
+        </div>
+    </div>
+    <div class="footer">
+        ID de Registro de usuario: #{{ id_registro }}<br>
+        Este documento es una constancia digital gratuita generada por el Circuito Comunal Simón Bolívar - Altagracia.
+    </div>
+    <div class="qr-container">
+        <img src="data:image/png;base64,{{ qr_code }}" class="qr-img">
+        <span class="qr-text">Validación Digital</span>
+    </div>    
+</body>
+</html>

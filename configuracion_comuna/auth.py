@@ -1,5 +1,5 @@
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from django.conf import settings
 from ninja.security import HttpBearer
 from apps.cuenta.models import User  
@@ -19,8 +19,7 @@ class AuthBearer(HttpBearer):
 def crear_token_jwt(user_id):
     payload = {
         'user_id': user_id,
-        # El token expirará en 1 día
-        'exp': datetime.now() + timedelta(days=1),
-        'iat': datetime.now()
+        'exp': datetime.now(timezone.utc) + timedelta(minutes=30), # el uso de timezone.utc asegura que la fecha sea consciente de la zona horaria
+        'iat': datetime.now(timezone.utc)
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
