@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import default_token_generator
 from .schemas import LoginSchema, UserOutSchema, RecuperarPasswordSchema, RestablecerPasswordSchema
 from configuracion_comuna.auth import crear_token_jwt, AuthBearer
-from .models import User
+from .models import User, TokenListaNegra
 
 router = Router()
 
@@ -19,14 +19,18 @@ def login(request, data: LoginSchema):
 @router.post("/logout", auth=AuthBearer())
 def logout(request):
     """
-    Endpoint para cerrar sesión. 
-    Al usar JWT, el servidor solo confirma la acción. 
-    El cliente (app móvil) DEBE borrar el token de su almacenamiento.
+    Endpoint para cerrar sesión de forma segura.
+    Extrae el token de la petición y lo guarda en la lista negra.
     """
-    return {
-        "mensaje": "Sesión cerrada exitosamente", 
-        "instruccion": "Por favor, elimina el token en la aplicación cliente."
-    }
+    auth_header = request.headers.get("Authorization")
+    
+    if auth_header and auth_header.startswith("Bearer "):
+        token_string = auth_header.split(" ")[1] 
+        
+        # get_or_create evita errores si por alguna razón se envía dos veces
+        TokenListaNegra.objects.get_or_create(token=token_string)
+
+    return {"mensaje": "Sesión cerrada exitosamente. El token ha sido invalidado."}
 
 # Usamos AuthBearer para proteger esta ruta. ¡Solo usuarios con token pueden entrar!
 @router.get("/perfil", response=UserOutSchema, auth=AuthBearer())

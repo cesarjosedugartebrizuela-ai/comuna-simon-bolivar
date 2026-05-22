@@ -112,3 +112,19 @@ class Grupo(Group):
         proxy = True # ¡Esta es la magia que crea el espejo!
         verbose_name = 'Grupo'
         verbose_name_plural = 'Grupos'
+
+class TokenListaNegra(models.Model):
+    """
+    Modelo para almacenar los tokens JWT que han sido invalidados mediante logout.
+    """
+    token = models.CharField(max_length=500, unique=True)
+    fecha_agregado = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        managed = True
+        db_table = 'cuenta"."token_lista_negra'
+        verbose_name = 'Token en Lista Negra'
+        verbose_name_plural = 'Tokens en Lista Negra'
+
+    def __str__(self):
+        return f"Token invalidado el {self.fecha_agregado}"

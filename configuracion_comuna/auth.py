@@ -2,18 +2,20 @@ import jwt
 from datetime import datetime, timedelta, timezone
 from django.conf import settings
 from ninja.security import HttpBearer
-from apps.cuenta.models import User  
+from apps.cuenta.models import User, TokenListaNegra
 
 # Esta clase protegerá nuestras rutas
 class AuthBearer(HttpBearer):
     def authenticate(self, request, token):
+        if TokenListaNegra.objects.filter(token=token).exists():
+            return None
         try:
             # Decodificamos el token usando la clave secreta de tu proyecto Django
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
             user = User.objects.get(id=payload["user_id"])
-            return user  # Si todo sale bien, retornamos el usuario
+            return user  
         except (jwt.ExpiredSignatureError, jwt.InvalidTokenError, User.DoesNotExist):
-            return None  # Si el token es inválido o expiró, denegamos el acceso
+            return None 
 
 # Función auxiliar para crear el token
 def crear_token_jwt(user_id):
