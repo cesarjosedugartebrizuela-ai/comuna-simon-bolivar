@@ -11,3 +11,11 @@ class UserOutSchema(ModelSchema):
     class Meta:
         model = User
         fields = ['id', 'username', 'nombre_completo', 'email', 'cedula', 'origen', 'verificacion']
+
+class RecuperarPasswordSchema(Schema):
+    email: str
+
+class RestablecerPasswordSchema(Schema):
+    id: int       
+    token: str    
+    nuevo_password: str
