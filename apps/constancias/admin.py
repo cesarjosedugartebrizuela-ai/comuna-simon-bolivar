@@ -105,6 +105,36 @@ class ConstanciaAdmin(ModelAdmin):
                 return mark_safe(html_rechazada)
 
         return '-'
+
+    def get_exclude(self, request, obj=None):
+        # Obtenemos los campos excluidos por defecto de la clase padre
+        excluded = super().get_exclude(request, obj) or []
+        
+        # Convertimos a lista por si viene como tupla, para poder modificarla
+        excluded = list(excluded)
+
+        # Si el usuario NO es administrador (superuser)
+        if not request.user.is_superuser:
+            # Lista de los nombres de los campos en tu modelo que queremos ocultar
+            campos_a_ocultar = ['usuario', 'fecha_aprobacion', 'estatus', 'observaciones'] 
+            
+            # Agregamos cada campo a la lista de excluidos si no está allí
+            for campo in campos_a_ocultar:
+                if campo not in excluded:
+                    excluded.append(campo)
+
+        return excluded
+    
+    def save_model(self, request, obj, form, change):
+        # Si 'change' es False, significa que estamos CREANDO una nueva constancia, no editando.
+        if not change:
+            # Verificamos si el usuario NO es un administrador
+            if not request.user.is_superuser:
+                # Asignamos el usuario que hizo la petición al campo 'usuario' del objeto
+                obj.usuario = request.user 
+                
+        # Finalmente, llamamos al método original de Django para que guarde los datos en la base de datos
+        super().save_model(request, obj, form, change)
         
     estado_y_acciones.short_description = 'Estado / Acciones'
 
