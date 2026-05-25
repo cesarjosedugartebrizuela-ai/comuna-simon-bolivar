@@ -16,7 +16,7 @@ from unfold.decorators import display
 
 from apps.cuenta.models import User, Grupo, Comuna
 
-from django.http import HttpRequest
+
 
 # ---- AQUÍ DESREGISTRAMOS EL GRUPO ORIGINAL ----
 admin.site.unregister(AuthGroup)
@@ -40,30 +40,41 @@ class UserCreateForm(forms.ModelForm):
         model = User
         fields = ('nombre_completo', 'email', 'cedula', 'origen')
 
+    def clean(self):
+        """
+        Verificamos que la persona exista en el modelo Comuna
+        antes de permitir la creación del usuario.
+        """
+        cleaned_data = super().clean()
+        cedula = cleaned_data.get('cedula')
+        origen = cleaned_data.get('origen')
+
+        if cedula and origen:
+            usuario_confirmado = Comuna.objects.filter(
+                cedula=cedula, origen=origen
+            ).exists()
+
+            if not usuario_confirmado:
+                raise forms.ValidationError(
+                    "El usuario no está registrado en la comuna. "
+                    "Por favor, verifique su número de cédula y origen."
+                )
+
+        return cleaned_data
+
     def save(self, commit=True):
-        # Evitamos guardar inmediatamente para poder modificar el objeto antes
         user = super().save(commit=False)
 
-        usuario_confirmado = Comuna.objects.filter(cedula=user.cedula, origen=user.origen).exists()
-        if not usuario_confirmado:
-            import django.contrib.messages as messages
-            request = getattr(self, 'request', None)
-            if isinstance(request, HttpRequest):
-                messages.error(request, "El usuario no está registrado en la comuna. Por favor, verifique su número de cédula y origen.")
-        # if not usuario_confirmado:
-        #     raise forms.ValidationError("El usuario no está registrado en la comuna. Por favor, verifique su número de cédula y origen.")
-        
         # Generación automática del username (Ejemplo: V-12345678)
         user.username = f"{user.origen}-{user.cedula}"
         
         # Como no pedimos contraseña al registrar, asignamos una inutilizable por seguridad
-        # (Posteriormente podrás asignarle una desde el modo edición)
         user.set_unusable_password()
 
-        
         if commit:
             user.save()
         return user
+
 
 
 # El decorador @admin.register es la forma moderna de registrar modelos

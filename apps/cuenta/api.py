@@ -54,7 +54,6 @@ def solicitar_recuperacion(request, data: RecuperarPasswordSchema):
     else:
         return f"El correo {data.email} no se encuentra registrado."
 
-
 @router.post("/restablecer-password")
 def restablecer_password(request, data: RestablecerPasswordSchema):
     """
