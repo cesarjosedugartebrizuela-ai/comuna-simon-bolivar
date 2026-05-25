@@ -14,7 +14,9 @@ from unfold.forms import UserChangeForm as UnfoldUserChangeForm
 from unfold.forms import AdminPasswordChangeForm
 from unfold.decorators import display
 
-from apps.cuenta.models import User, Grupo
+from apps.cuenta.models import User, Grupo, Comuna
+
+from django.http import HttpRequest
 
 # ---- AQUÍ DESREGISTRAMOS EL GRUPO ORIGINAL ----
 admin.site.unregister(AuthGroup)
@@ -22,6 +24,10 @@ admin.site.unregister(AuthGroup)
 # ---- AQUÍ REGISTRAMOS TU NUEVO GRUPO CON ESTILOS DE UNFOLD ----
 @admin.register(Grupo)
 class GrupoAdmin(BaseGroupAdmin, ModelAdmin):
+    pass
+
+@admin.register(Comuna)
+class ComunaAdmin(ModelAdmin):
     pass
 
 # Opcional: Desregistrar el modelo Group si no lo vas a usar
@@ -37,6 +43,15 @@ class UserCreateForm(forms.ModelForm):
     def save(self, commit=True):
         # Evitamos guardar inmediatamente para poder modificar el objeto antes
         user = super().save(commit=False)
+
+        usuario_confirmado = Comuna.objects.filter(cedula=user.cedula, origen=user.origen).exists()
+        if not usuario_confirmado:
+            import django.contrib.messages as messages
+            request = getattr(self, 'request', None)
+            if isinstance(request, HttpRequest):
+                messages.error(request, "El usuario no está registrado en la comuna. Por favor, verifique su número de cédula y origen.")
+        # if not usuario_confirmado:
+        #     raise forms.ValidationError("El usuario no está registrado en la comuna. Por favor, verifique su número de cédula y origen.")
         
         # Generación automática del username (Ejemplo: V-12345678)
         user.username = f"{user.origen}-{user.cedula}"
@@ -44,6 +59,7 @@ class UserCreateForm(forms.ModelForm):
         # Como no pedimos contraseña al registrar, asignamos una inutilizable por seguridad
         # (Posteriormente podrás asignarle una desde el modo edición)
         user.set_unusable_password()
+
         
         if commit:
             user.save()

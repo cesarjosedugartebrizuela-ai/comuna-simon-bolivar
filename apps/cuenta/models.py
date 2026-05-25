@@ -128,3 +128,18 @@ class TokenListaNegra(models.Model):
 
     def __str__(self):
         return f"Token invalidado el {self.fecha_agregado}"
+
+class Comuna(models.Model):
+    origen = models.CharField(max_length=1)
+    cedula = models.IntegerField()
+    nombre_completo = models.CharField(max_length=255)
+    consejo_comunal = models.CharField(max_length=100)
+
+    class Meta:
+        managed             = True
+        db_table            = 'cuenta\".\"comuna'
+        verbose_name        = 'Comuna'
+        verbose_name_plural = 'Comunas'
+
+    def __str__(self):
+        return self.nombre_completo
