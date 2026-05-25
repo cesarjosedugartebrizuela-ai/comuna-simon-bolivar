@@ -23,5 +23,5 @@ urlpatterns = [
     # path('exportar-estadisticas/', views.exportar_estadisticas_pdf, name='exportar_estadisticas_pdf'),
     # path('recuperar-cuenta/', views.verificar_identidad_view, name='verificar_identidad'),
     # path('restablecer-password/', views.restablecer_password_view, name='restablecer_password'),
-    path('api/', api.urls),
+    path('', api.urls),
 ]

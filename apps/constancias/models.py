@@ -16,12 +16,19 @@ class Constancia(models.Model):
     estatus = models.CharField(max_length=20, choices=ESTATUS_CHOICES, default='Pendiente')
     observaciones = models.TextField(blank=True, null=True)
     fecha_aprobacion = models.DateTimeField(null=True, blank=True)
+    codigo = models.TextField(blank=True, null=True)
 
     class Meta:
         managed             = True
         db_table            = 'constancias\".\"constancia'
         verbose_name        = 'Constancia'
         verbose_name_plural = 'Constancias'
+
+    def save(self, *args, **kwargs):
+        # Solo generamos el código si la constancia es aprobada y no tiene código
+        if self.estatus == 'Aprobada' and not self.codigo:
+            self.codigo = f"CONST-{self.id:06d}"
+        super().save(*args, **kwargs)
     
     def __str__(self):
         return f"{self.usuario} ({self.fecha_aprobacion})"

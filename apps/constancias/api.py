@@ -1,6 +1,7 @@
 from ninja import Router
 from django.http import FileResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
+
 import os
 from .models import Constancia
 from .schemas import ConstanciaIn, ConstanciaOut
@@ -30,6 +31,18 @@ def solicitar_constancia(request, data: ConstanciaIn):
     )
     return constancia
 
+@router.get("/validar/{codigo}/", auth=None) 
+def validar_constancia(request, codigo: str):
+    constancia = Constancia.objects.filter(codigo=codigo, estatus='Aprobada').first()
+    # Verificamos que la constancia no se encuentre vencida
+    if not constancia:
+        return render(request, 'validacion/validacion_erronea.html')
+    elif constancia.fecha_aprobacion and (datetime.datetime.now(pytz.utc) - constancia.fecha_aprobacion).days > 30:
+        return {"message": "Constancia vencida"}
+    else:
+        return render(request, 'validacion/validacion_exitosa.html')
+
+
 @router.get("/imprimir-constancia/{constancia_id}/")
 def descargar_pdf(request, constancia_id: int):
     # Solo se genera si está aprobada
@@ -44,13 +57,12 @@ def descargar_pdf(request, constancia_id: int):
         9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
     }
     # Creamos el contenido del QR
+    scheme = request.scheme
+    host = request.get_host()
+    url_validacion = f"{scheme}://{host}/constancias/validar/{constancia.codigo}/"
+
     datos_qr = (
-        f"https://miurl.com/usuario.origen/usuario.cedula"+
-        f"ID: {constancia.id}\n"
-        f"Beneficiario: {usuario.nombre_completo}\n"
-        f"Cédula: {usuario.cedula}\n"
-        f"Aprobado el: {fecha_local.strftime('%d/%m/%Y')}\n"
-        f"Validado por: Circuito Comunal Simón Bolívar"
+        url_validacion
     )
     # Generar el QR
     qr = qrcode.QRCode(version=1, box_size=10, border=0)
@@ -70,9 +82,10 @@ def descargar_pdf(request, constancia_id: int):
         'fecha_anio': fecha_local.year,
         'id_registro': f"00{usuario.id}",
         'ruta_logo': ruta_logo_fisica,
+        'url_validacion': url_validacion,
         'qr_code': qr_base64
     }
-    html_string = render_to_string('pdf_template.html', context)
+    html_string = render_to_string('pdf/pdf_template.html', context)
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="Constancia_{usuario.cedula}.pdf"'
     # xhtml2pdf sabe interpretar rutas físicas de archivos si están bien formadas
