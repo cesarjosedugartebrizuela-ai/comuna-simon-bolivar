@@ -60,7 +60,7 @@ class ConstanciaAdmin(ModelAdmin):
         aprobar_url = reverse(f'admin:{app_label}_{model_name}_aprobar', args=[obj.pk])
         rechazar_url = reverse(f'admin:{app_label}_{model_name}_rechazar', args=[obj.pk])
         
-        descargar_url = reverse('imprimir_constancia', args=[obj.pk]) 
+        descargar_url = f'/constancias/imprimir_constancia/{obj.pk}/' 
 
         # --- BLOQUES HTML REUTILIZABLES ---
         html_descargar = f'''

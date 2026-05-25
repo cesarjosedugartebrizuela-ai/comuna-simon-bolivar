@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, render
 import os
 from .models import Constancia
 from .schemas import ConstanciaIn, ConstanciaOut
-from configuracion_comuna.auth import AuthBearer
+from configuracion_comuna.auth import AuthBearer, SessionAuth
 
 from django.http import HttpResponse
 from xhtml2pdf import pisa
@@ -43,8 +43,8 @@ def validar_constancia(request, codigo: str):
         return render(request, 'validacion/validacion_exitosa.html')
 
 
-@router.get("/imprimir-constancia/{constancia_id}/")
-def descargar_pdf(request, constancia_id: int):
+@router.get("/imprimir_constancia/{constancia_id}/", auth=[SessionAuth, AuthBearer()])
+def imprimir_constancia(request, constancia_id: int):
     # Solo se genera si está aprobada
     usuario = request.auth
     constancia = get_object_or_404(Constancia, pk=constancia_id, estatus='Aprobada')

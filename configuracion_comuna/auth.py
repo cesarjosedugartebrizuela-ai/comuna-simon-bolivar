@@ -1,7 +1,7 @@
 import jwt
 from datetime import datetime, timedelta, timezone
 from django.conf import settings
-from ninja.security import HttpBearer
+from ninja.security import HttpBearer, django_auth
 from apps.cuenta.models import User, TokenListaNegra
 
 # Esta clase protegerá nuestras rutas
@@ -16,6 +16,8 @@ class AuthBearer(HttpBearer):
             return user  
         except (jwt.ExpiredSignatureError, jwt.InvalidTokenError, User.DoesNotExist):
             return None 
+
+SessionAuth = django_auth
 
 # Función auxiliar para crear el token
 def crear_token_jwt(user_id):
